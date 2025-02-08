@@ -44,10 +44,11 @@ serial_blocking_read(int serial_fd, void* buf, size_t len, unsigned int timeout_
 
     unsigned int timeout_ms_counter = 0;
     while (read(serial_fd, msg, len) != len) {
-        if(timeout_ms_counter++ == timeout_ms) {
+        if(timeout_ms_counter == timeout_ms) {
             return 1;
         } else {
             usleep(1000);
+            timeout_ms_counter++;
         }
     }
     return 0;
