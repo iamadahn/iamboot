@@ -8,19 +8,12 @@
 #define FIRMWARE_BYTES_LENGTH       56U
 #define TOTAL_MSG_LENGTH            64U
 
-#ifdef IAMBOOT_LOW_LEVEL
-#include "usart.h"
-
-uint8_t handshake_send_serial(usart_t* usart);
-uint8_t handshake_receive_serial(usart_t* usart, uint32_t* number_of_packets);
-uint8_t ack_send_serial(usart_t* usart);
-#elif IAMBOOT_HIGH_LEVEL
-int handshake_send_serial(int serial_fd, unsigned long number_of_packets);
-int handshake_receive_serial(int serial_fd);
-int ack_receive_serial(int serial_fd);
-int firmware_upgrade_serial(int serial_fd, int firmware_fd);
-#else
-#error One must specify for wich platform this library should be built.
-#endif
+int8_t iamboot_serial_tx(void *pv_arg, void *buf, uint32_t len, uint32_t timeout_ms);
+int8_t iamboot_serial_rx(void *pv_arg, void *buf, uint32_t len, uint32_t timeout_ms);
+int8_t iamboot_handshake_serial_tx(void *pv_arg, uint32_t* number_of_packets, uint32_t timeout_ms);
+int8_t iamboot_handshake_serial_rx(void *pv_arg, uint32_t* number_of_packets, uint32_t timeout_ms);
+int8_t iamboot_ack_serial_tx(void *pv_arg);
+int8_t iamboot_ack_serial_rx(void *pv_arg);
+int8_t iamboot_firmware_upgrade_serial(void *pv_arg, uint8_t firmware_bytes);
 
 #endif
