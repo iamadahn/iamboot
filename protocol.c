@@ -58,17 +58,23 @@ int8_t iamboot_handshake_serial_tx(void *pv_arg, uint32_t *number_of_packets, ui
     
     ret = checksum_add(handshake_str, HANDSHAKE_LENGTH);
     if (ret != 0) {
+#ifdef __linux__
         printf("Failed to add checksum to handshake message on send.\n");
+#endif
         return 1;
     }
 
     ret = iamboot_serial_tx(pv_arg, handshake_str, HANDSHAKE_LENGTH, timeout_ms);
     if (ret != 0) {
+#ifdef __linux__
         printf("Failed to send handshake message.\nExpected to send %d bytes, but sent %d.\n", ret, HANDSHAKE_LENGTH);
+#endif
         return 1;
     }
 
+#ifdef __linux__
     printf("Succesfully sent handshake message.\n");
+#endif
 
     return 0;
 }
@@ -81,17 +87,23 @@ int8_t iamboot_handshake_serial_rx(void *pv_arg, uint32_t *number_of_packets, ui
     uint8_t receive_buf[HANDSHAKE_LENGTH];
     ret = iamboot_serial_rx(pv_arg, receive_buf, HANDSHAKE_LENGTH, timeout_ms);
     if (ret != 0) {
+#ifdef __linux__
         printf("Failed to receive handshake message.\nExpected to receive %d bytes, but received %d.\n", HANDSHAKE_LENGTH, ret);
+#endif
         return 1;
     }
 
     ret = (arrcmp(receive_buf, handshake_str, HANDSHAKE_LENGTH - 2) != 0) & (checksum_valid(receive_buf, HANDSHAKE_LENGTH));
     if (ret != 0) {
+#ifdef __linux__
         printf("Handshake message missmatch.\n");
+#endif
         return 1;
     }
     
+#ifdef __linux__
     printf("Succesfully received handshake message.\n");
+#endif
 
     return 0;
 }
@@ -121,20 +133,26 @@ int8_t iamboot_ack_serial_rx(void *pv_arg)
 
     ret = checksum_add(ack_str, ACK_LENGTH);
     if (ret != 0) {
+#ifdef __linux__
         printf("Failed to add checksum to acknowledge message on receive.\n");
+#endif
         return 1;
     }
 
     uint8_t receive_buf[ACK_LENGTH];
     ret = iamboot_serial_rx(pv_arg, receive_buf, ACK_LENGTH, 1000);
     if (ret != 0) {
+#ifdef __linux__
         printf("Failed to receive acknowledge message.\n");
+#endif
         return 1;
     }
 
     ret = (arrcmp(receive_buf, ack_str, ACK_LENGTH - 2) != 0) | (checksum_valid(receive_buf, ACK_LENGTH) != 0);
     if (ret != 0) {
+#ifdef __linux__
         printf("Acknowledge message missmatch.\n");
+#endif
         return 1;
     }
 
