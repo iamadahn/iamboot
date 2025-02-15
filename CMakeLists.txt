@@ -10,3 +10,8 @@ set(SCRS
 )
 
 target_sources(iamboot INTERFACE ${SCRS})
+
+if(BUILD_EXECUTABLE)
+    project(iamboot_app)
+    add_executable(iamboot_app ${SCRS} main.c)
+endif()
