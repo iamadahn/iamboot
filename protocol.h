@@ -14,6 +14,9 @@ int8_t iamboot_handshake_serial_tx(void *pv_arg, uint32_t* number_of_packets, ui
 int8_t iamboot_handshake_serial_rx(void *pv_arg, uint32_t* number_of_packets, uint32_t timeout_ms);
 int8_t iamboot_ack_serial_tx(void *pv_arg);
 int8_t iamboot_ack_serial_rx(void *pv_arg);
-int8_t iamboot_firmware_upgrade_serial(void *pv_arg, uint8_t firmware_bytes);
+
+#ifdef __linux__
+int8_t iamboot_firmware_upgrade_serial(int serial_fd, int firmware_fd);
+#endif
 
 #endif

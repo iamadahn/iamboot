@@ -159,9 +159,9 @@ int8_t iamboot_ack_serial_rx(void *pv_arg)
     return 0;
 }
 
-int8_t firmware_upgrade_serial(void *pv_arg, uint8_t *firmware_bytes)
+#ifdef __linux__
+int8_t iamboot_firmware_upgrade_serial(int serial_fd, int firmware_fd)
 {
-    /*
     int ret = 0;
     struct stat firmware_stat;
     fstat(firmware_fd, &firmware_stat);
@@ -184,18 +184,19 @@ int8_t firmware_upgrade_serial(void *pv_arg, uint8_t *firmware_bytes)
         printf("Succesfully read firmware binary - %d bytes read.\n", ret);
     }
 
-    size_t trailing_bytes = 0;
-    size_t number_of_packets = firmware_stat.st_size / FIRMWARE_BYTES_LENGTH;
+    uint32_t trailing_bytes = 0;
+    uint32_t number_of_packets = firmware_stat.st_size / FIRMWARE_BYTES_LENGTH;
 
     if ((trailing_bytes = firmware_stat.st_size % FIRMWARE_BYTES_LENGTH) != 0) {
-        printf("The firmware will be divided in %lu packets.\n", number_of_packets + 1);
-        handshake_send_serial(serial_fd, number_of_packets + 1);
+        number_of_packets++;
+        printf("The firmware will be divided in %lu packets.\n", number_of_packets);
+        iamboot_handshake_serial_tx(&serial_fd, &number_of_packets, 100);
     } else {
         printf("The firmware will be divided in %lu packets.\n", number_of_packets);
-        handshake_send_serial(serial_fd, number_of_packets); 
+        iamboot_handshake_serial_tx(&serial_fd, &number_of_packets, 100); 
     }
 
-    ret = handshake_receive_serial(serial_fd);
+    ret = iamboot_handshake_serial_rx(&serial_fd, &number_of_packets, 100);
     if (ret != 0) {
         return 1;
     }
@@ -211,7 +212,7 @@ int8_t firmware_upgrade_serial(void *pv_arg, uint8_t *firmware_bytes)
             return 1;
         }
 
-        ret = ack_receive_serial(serial_fd);
+        ret = iamboot_ack_serial_rx(&serial_fd);
         if (ret != 0) {
             printf("No acknowledge on packet number %lu.\n", current_packet_number);
             return 1;
@@ -229,7 +230,7 @@ int8_t firmware_upgrade_serial(void *pv_arg, uint8_t *firmware_bytes)
             return 1;
         }
 
-        ret = ack_receive_serial(serial_fd);
+        ret = iamboot_ack_serial_rx(&serial_fd);
         if (ret != 0) {
             printf("No acknowledge on packet number %lu.\n", number_of_packets + 1);
             return 1;
@@ -244,7 +245,7 @@ int8_t firmware_upgrade_serial(void *pv_arg, uint8_t *firmware_bytes)
     printf("Succesfully written firmware binary.\n");
 
     free(firmware_bin);
-    */
 
     return 0;
 }
+#endif
