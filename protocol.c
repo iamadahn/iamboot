@@ -105,6 +105,8 @@ int8_t iamboot_handshake_serial_rx(void *pv_arg, uint32_t *number_of_packets, ui
     printf("Succesfully received handshake message.\n");
 #endif
 
+    *number_of_packets = (receive_buf[4] << 24) | (receive_buf[5]  << 16) | (receive_buf[6] << 8) | receive_buf[7];
+
     return 0;
 }
 
@@ -165,7 +167,7 @@ int8_t iamboot_firmware_upgrade_serial(int serial_fd, int firmware_fd)
     int ret = 0;
     struct stat firmware_stat;
     fstat(firmware_fd, &firmware_stat);
-    printf("Firmware size - %lu.\n", firmware_stat.st_size);
+    printf("Firmware size - %ld.\n", firmware_stat.st_size);
 
     unsigned char* firmware_bin = malloc(sizeof(unsigned char) * firmware_stat.st_size);
     if (firmware_bin == NULL) {
@@ -188,11 +190,11 @@ int8_t iamboot_firmware_upgrade_serial(int serial_fd, int firmware_fd)
     uint32_t number_of_packets = firmware_stat.st_size / FIRMWARE_BYTES_LENGTH;
 
     if ((trailing_bytes = firmware_stat.st_size % FIRMWARE_BYTES_LENGTH) != 0) {
+        printf("The firmware will be divided in %d + 1 packets.\n", number_of_packets);
         number_of_packets++;
-        printf("The firmware will be divided in %lu packets.\n", number_of_packets);
         iamboot_handshake_serial_tx(&serial_fd, &number_of_packets, 100);
     } else {
-        printf("The firmware will be divided in %lu packets.\n", number_of_packets);
+        printf("The firmware will be divided in %d packets.\n", number_of_packets);
         iamboot_handshake_serial_tx(&serial_fd, &number_of_packets, 100); 
     }
 
@@ -200,6 +202,7 @@ int8_t iamboot_firmware_upgrade_serial(int serial_fd, int firmware_fd)
     if (ret != 0) {
         return 1;
     }
+    number_of_packets--;
 
     unsigned char msg_buf[TOTAL_MSG_LENGTH] = {0xBA, 0xDD};
     for (size_t current_packet_number = 0; current_packet_number < number_of_packets; current_packet_number++) {
@@ -208,13 +211,13 @@ int8_t iamboot_firmware_upgrade_serial(int serial_fd, int firmware_fd)
 
         ret = write(serial_fd, msg_buf, TOTAL_MSG_LENGTH);
         if (ret != TOTAL_MSG_LENGTH) {
-            printf("Error sending packet number %lu.\n", current_packet_number);
+            printf("Error sending packet number %ld.\n", current_packet_number);
             return 1;
         }
 
         ret = iamboot_ack_serial_rx(&serial_fd);
         if (ret != 0) {
-            printf("No acknowledge on packet number %lu.\n", current_packet_number);
+            printf("No acknowledge on packet number %ld.\n", current_packet_number);
             return 1;
         }
     }
@@ -226,13 +229,13 @@ int8_t iamboot_firmware_upgrade_serial(int serial_fd, int firmware_fd)
 
         ret = write(serial_fd, msg_buf, TOTAL_MSG_LENGTH);
         if (ret != TOTAL_MSG_LENGTH) {
-            printf("Error sending packet number %lu.\n", number_of_packets + 1);
+            printf("Error sending packet number %d.\n", number_of_packets);
             return 1;
         }
 
         ret = iamboot_ack_serial_rx(&serial_fd);
         if (ret != 0) {
-            printf("No acknowledge on packet number %lu.\n", number_of_packets + 1);
+            printf("No acknowledge on packet number %d.\n", number_of_packets);
             return 1;
         }
     }
