@@ -63,3 +63,42 @@ main(int argc, char **argv) {
     return ret;
 }
 
+int8_t iamboot_serial_tx(void *pv_arg, void *buf, uint32_t len, uint32_t timeout_ms)
+{
+    if (pv_arg == NULL || buf == NULL) 
+        return -1;
+
+    int *serial_fd_ptr = (int *)pv_arg;
+    uint8_t *msg = (uint8_t *)buf;
+
+    uint32_t timeout_cnt = 0;
+    while (write(*serial_fd_ptr, msg, len) != len) {
+        if (timeout_cnt == timeout_ms)
+            return -2;
+        usleep(1000);
+        timeout_cnt++;
+    }
+        
+    return 0;
+}
+
+int8_t iamboot_serial_rx(void *pv_arg, void *buf, uint32_t len, uint32_t timeout_ms)
+{
+    if (pv_arg == NULL || buf == NULL) 
+        return -1;
+
+    int *serial_fd_ptr = (int *)pv_arg;
+    uint8_t *msg = (uint8_t *)buf;
+
+    int ret = 0;
+    uint32_t timeout_cnt = 0;
+    while ((ret = read(*serial_fd_ptr, msg, len)) != len) {
+        if (timeout_cnt == timeout_ms)
+            return -2;
+        usleep(1000);
+        timeout_cnt++;
+    }
+        
+    return 0;
+}
+
