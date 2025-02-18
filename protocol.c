@@ -1,6 +1,3 @@
-#pragma GCC push_options
-#pragma GCC optimize ("O0")
-
 #include "protocol.h"
 #include "checksum.h"
 #include "stdio.h"
@@ -198,7 +195,7 @@ int8_t iamboot_firmware_upgrade_serial(int serial_fd, int firmware_fd)
         iamboot_handshake_serial_tx(&serial_fd, &number_of_packets, 100); 
     }
 
-    ret = iamboot_handshake_serial_rx(&serial_fd, &number_of_packets, 100);
+    ret = iamboot_handshake_serial_rx(&serial_fd, &number_of_packets, 5000);
     if (ret != 0) {
         return 1;
     }
