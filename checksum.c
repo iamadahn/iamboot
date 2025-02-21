@@ -33,10 +33,6 @@ checksum_add(void* buf, size_t len) {
 
     unsigned int checksum = checksum_calculate(msg, len);
 
-    if (checksum == 0) {
-        return 1;
-    }
-
     msg[len - 1] = checksum & 0x00FF;
     msg[len - 2] = (checksum >> 8) & 0x00FF;
 
@@ -52,10 +48,6 @@ checksum_valid(void* buf, size_t len) {
     unsigned char* msg = (unsigned char*)buf;
 
     unsigned int checksum = checksum_calculate(msg, len);
-
-    if (checksum == 0) {
-        return 1;
-    }
 
     if ((msg[len - 1] != (checksum & 0x00FF)) & (msg[len - 2] != ((checksum >> 8) & 0x00FF))) {
         return 1;
